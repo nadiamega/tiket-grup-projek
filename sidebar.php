@@ -64,3 +64,5 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <p class="text-[10px] text-center text-gray-400 font-bold mt-4 uppercase">© 2026 SMK Antartika 2 Sidoarjo</p>
     </div>
 </aside>
+
+<!-- tambahan nadiamega -->
