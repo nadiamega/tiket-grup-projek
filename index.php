@@ -1,6 +1,7 @@
 <?php
 
 include 'koneksi.php';
+// session_start();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -27,8 +28,8 @@ include 'koneksi.php';
             </div>
 
             <nav class="flex items-center space-x-1">
-                <a href="login.php" class="nav-link px-5 py-2 rounded-lg text-sm font-bold text-gray-700 hover:bg-black hover:text-white">Jadwal Event</a>
-                <a href="login.php" class="nav-link px-5 py-2 rounded-lg text-sm font-bold text-gray-700 hover:bg-black hover:text-white">Sponsor</a>
+                <a href="daftar_event.php" class="nav-link px-5 py-2 rounded-lg text-sm font-bold text-gray-700 hover:bg-black hover:text-white">Event</a>
+                <a href="sponsors.php" class="nav-link px-5 py-2 rounded-lg text-sm font-bold text-gray-700 hover:bg-black hover:text-white">Sponsor</a>
                 <a href="login.php" class="nav-link px-5 py-2 rounded-lg text-sm font-bold text-gray-700 hover:bg-black hover:text-white">Cek Tiket</a>
             </nav>
 
@@ -55,14 +56,14 @@ include 'koneksi.php';
             </p>
 
             <div class="flex justify-center">
-                <a href="login.php" class="bg-black text-white px-14 py-5 rounded-2xl font-bold text-xl hover:bg-gray-800 transition-all hover:scale-105 shadow-2xl shadow-gray-200">
+                <a href="daftar_event.php" class="bg-black text-white px-14 py-5 rounded-2xl font-bold text-xl hover:bg-gray-800 transition-all hover:scale-105 shadow-2xl shadow-gray-200">
                     Cek Event Sekarang
                 </a>
             </div>
         </div>
     </main>
 
-    <footer class="py-12 border-t border-gray-50">
+    <footer class="py-20 border-t border-gray-50">
         <div class="max-w-7xl mx-auto px-6 text-center text-gray-400 text-[10px] font-bold tracking-[0.3em] uppercase">
             <p>&copy; 2026 SMK ANTARTIKA 2 SIDOARJO. ALL RIGHTS RESERVED.</p>
         </div>

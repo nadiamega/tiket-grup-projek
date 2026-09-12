@@ -1,6 +1,6 @@
 <?php
 include 'koneksi.php';
-session_start();
+// session_start();
 
 // FIX: uncomment proteksi dan ambil data
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {

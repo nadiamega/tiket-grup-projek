@@ -1,6 +1,6 @@
 <?php
 include 'koneksi.php';
-session_start();
+// session_start();
 if($_SESSION['role'] != 'admin') exit;
 
 $id = $_GET['id'];

@@ -1,8 +1,4 @@
 <?php
-// Variabel yang bisa di-set sebelum include:
-// $page_title     = "Judul Halaman";     (wajib)
-// $page_subtitle  = "Subjudul";          (opsional)
-// $back_link      = "halaman.php";       (opsional, munculkan tombol kembali)
 ?>
 <div class="mb-10 flex items-start justify-between">
     <div>

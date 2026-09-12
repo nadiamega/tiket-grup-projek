@@ -1,6 +1,6 @@
 <?php
 include 'koneksi.php';
-session_start();
+// session_start();
 
 // Proteksi: Cek apakah yang akses beneran admin
 if ($_SESSION['role'] != 'admin') {
