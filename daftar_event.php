@@ -1,11 +1,11 @@
 <?php
 include 'koneksi.php';
-session_start();
+// session_start();
 
-if (!isset($_SESSION['username'])) {
-    header("location:login.php");
-    exit;
-}
+// if (!isset($_SESSION['username'])) {
+//     header("location:login.php");
+//     exit;
+// }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -22,10 +22,19 @@ if (!isset($_SESSION['username'])) {
     <?php include 'sidebar.php'; ?>
 
     <main class="flex-1 p-10 overflow-y-auto">
-        <?php
-        $page_title = "Daftar Event";
-        include 'header_user.php';
-        ?>
+        <?php $page_title = "Daftar Event"; ?>
+        <?php if ($role == 'user') : include 'header_user.php'; ?>
+        <?php else : ?>
+            <div class="mb-6">
+                <?php if (!empty($back_link)) : ?>
+                    <a href="<?php echo $back_link; ?>" class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-black transition">← Kembali</a>
+                <?php endif; ?>
+                <h2 class="text-[32px] font-black text-gray-900 tracking-tight <?php echo !empty($back_link) ? 'mt-4' : ''; ?>"><?php echo $page_title ?? ''; ?></h2>
+                <?php if (!empty($page_subtitle)) : ?>
+                    <p class="text-sm text-gray-400 font-medium tracking-tight"><?php echo $page_subtitle; ?></p>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
 
         <div class="space-y-6 w-full">
             <?php

@@ -1,4 +1,9 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$role = $_SESSION['role'] ?? '';
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
@@ -10,19 +15,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
     
     <nav class="flex-1 px-6 space-y-2">
-        <?php if ($_SESSION['role'] == 'admin') : ?>
+        <?php if ($role == 'admin') : ?>
             <a href="dashboard_admin.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
                 <?php echo ($current_page == 'dashboard_admin.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Dashboard Admin
             </a>
-        <?php else : ?>
-            <a href="dashboard_user.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
-                <?php echo ($current_page == 'dashboard_user.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
-                Dashboard
-            </a>
-        <?php endif; ?>
-
-        <?php if ($_SESSION['role'] == 'admin') : ?>
             <a href="kelola_event.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
                 <?php echo ($current_page == 'kelola_event.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Kelola Event
@@ -39,9 +36,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <?php echo ($current_page == 'kelola_user.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Kelola User
             </a>
-        <?php endif; ?>
 
-        <?php if ($_SESSION['role'] == 'user') : ?>
+        <?php elseif ($role == 'user') : ?>
+            <a href="dashboard_user.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
+                <?php echo ($current_page == 'dashboard_user.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
+                Dashboard
+            </a>
             <a href="daftar_event.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
                 <?php echo ($current_page == 'daftar_event.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Daftar Event
@@ -54,13 +54,32 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <?php echo ($current_page == 'sponsors.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Daftar Sponsor
             </a>
+        
+        <?php else : ?>
+            <a href="daftar_event.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
+                <?php echo ($current_page == 'daftar_event.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
+                Daftar Event
+            </a>
+            <a href="sponsors.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
+                <?php echo ($current_page == 'sponsors.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
+                Daftar Sponsor
+            </a>
         <?php endif; ?>
     </nav>
 
     <div class="p-6 mt-auto">
-        <a href="logout.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all duration-200 uppercase tracking-widest text-[10px]">
-            Log Out
-        </a>
+        <?php if (!empty($role)) : ?>
+            <a href="logout.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all duration-200 uppercase tracking-widest text-[10px]">
+                Log Out
+            </a>
+        <?php else : ?>
+            <a href="login.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold text-blue-600 hover:bg-blue-50 transition-all duration-200 uppercase tracking-widest text-[10px]">
+                Log In
+            </a>
+            <a href="logout.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all duration-200 uppercase tracking-widest text-[10px]">
+                Keluar
+            </a>
+        <?php endif; ?>
         <p class="text-[10px] text-center text-gray-400 font-bold mt-4 uppercase">© 2026 SMK Antartika 2 Sidoarjo</p>
     </div>
 </aside>

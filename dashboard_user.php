@@ -1,6 +1,6 @@
 <?php
 include 'koneksi.php';
-session_start();
+// session_start();
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'user') {
     header("location:login.php");

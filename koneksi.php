@@ -1,5 +1,9 @@
 <?php
-$host = "localhost";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$host = "127.0.0.1";
 $user = "root";
 $pass = "";
 $db   = "proweb";

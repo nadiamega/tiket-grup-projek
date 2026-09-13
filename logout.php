@@ -1,6 +1,6 @@
 <?php
 // Inisialisasi session
-session_start();
+// session_start();
 
 // Hapus semua variabel session
 $_SESSION = array();
