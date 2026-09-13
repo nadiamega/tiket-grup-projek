@@ -43,7 +43,15 @@ $u_id     = $_SESSION['user_id'];
                                            ORDER BY bookings.id DESC");
 
             if(mysqli_num_rows($q_tiket) > 0) {
-                while($t = mysqli_fetch_assoc($q_tiket)) { ?>
+                while($t = mysqli_fetch_assoc($q_tiket)) {
+
+                    // Teks harga & metode bayar
+                    if ((int)$t['total_bayar'] > 0) {
+                        $bayar_text = 'Rp ' . number_format($t['total_bayar'], 0, ',', '.') . ' · ' . htmlspecialchars($t['metode_bayar']);
+                    } else {
+                        $bayar_text = 'Gratis';
+                    }
+                    ?>
                     <div class="bg-white rounded-[3rem] border border-gray-100 shadow-sm flex overflow-hidden transition-transform hover:scale-[1.01]">
                         <div class="bg-black p-10 flex items-center justify-center text-white font-black text-2xl uppercase vertical-text tracking-[0.3em] opacity-90">
                             TICKET
@@ -60,7 +68,7 @@ $u_id     = $_SESSION['user_id'];
                                 <h3 class="text-2xl font-black text-gray-900 tracking-tight"><?php echo htmlspecialchars($t['nama_event']); ?></h3>
                             </div>
 
-                            <div class="mt-8 grid grid-cols-2 gap-8 pt-8 border-t border-gray-50">
+                            <div class="mt-8 grid grid-cols-3 gap-8 pt-8 border-t border-gray-50">
                                 <div>
                                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Waktu Pelaksanaan</p>
                                     <p class="text-sm font-bold text-gray-700">🗓️ <?php echo date('d F Y', strtotime($t['tanggal'])); ?></p>
@@ -68,6 +76,10 @@ $u_id     = $_SESSION['user_id'];
                                 <div>
                                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lokasi Event</p>
                                     <p class="text-sm font-bold text-gray-700">📍 <?php echo htmlspecialchars($t['lokasi']); ?></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pembayaran</p>
+                                    <p class="text-sm font-bold text-gray-700">💳 <?php echo $bayar_text; ?></p>
                                 </div>
                             </div>
                         </div>

@@ -7,11 +7,12 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-$event_id = $_POST['event_id'];
-$u_id     = $_SESSION['user_id'];
-$nama     = mysqli_real_escape_string($conn, $_POST['nama']);
-$kelas    = mysqli_real_escape_string($conn, $_POST['kelas']);
-$telp     = mysqli_real_escape_string($conn, $_POST['telp']);
+$event_id     = $_POST['event_id'];
+$u_id         = $_SESSION['user_id'];
+$nama         = mysqli_real_escape_string($conn, $_POST['nama']);
+$kelas        = mysqli_real_escape_string($conn, $_POST['kelas']);
+$telp         = mysqli_real_escape_string($conn, $_POST['telp']);
+$metode_bayar = mysqli_real_escape_string($conn, $_POST['metode_bayar']);
 
 // Generate kode tiket unik
 function generateKode($conn) {
@@ -27,20 +28,37 @@ function generateKode($conn) {
 }
 $kode_tiket = generateKode($conn);
 
-$cek_event = mysqli_query($conn, "SELECT kuota FROM events WHERE id='$event_id'");
+// Ambil harga ASLI dari database (bukan dari form) supaya tidak bisa dimanipulasi user
+$cek_event = mysqli_query($conn, "SELECT kuota, harga FROM events WHERE id='$event_id'");
 $d = mysqli_fetch_assoc($cek_event);
 
-if($d['kuota'] > 0) {
-    // FIX: tambahkan kolom nama ke INSERT
-    $query_bookings = "INSERT INTO bookings (user_id, kode_tiket, nama_lengkap, event_id, kelas, telp) 
-                      VALUES ('$u_id', '$kode_tiket', '$nama', '$event_id', '$kelas', '$telp')";
-    
-    if(mysqli_query($conn, $query_bookings)) {
+if ($d && $d['kuota'] > 0) {
+
+    // Parse harga varchar (mis. "Rp 5.000" / "Gratis") jadi angka murni
+    $harga_raw = trim($d['harga']);
+    if (stripos($harga_raw, 'gratis') !== false) {
+        $total_bayar = 0;
+    } else {
+        $total_bayar = (int) preg_replace('/[^0-9]/', '', $harga_raw); // "Rp 5.000" -> 5000
+    }
+
+    // --- SIMULASI PROSES PEMBAYARAN ---
+    // Nanti kalau mau pakai payment gateway asli (Midtrans/Xendit),
+    // panggil API-nya di sini sebelum status diubah jadi "Lunas".
+    $status_pembayaran = "Lunas";
+
+    $query_bookings = "INSERT INTO bookings 
+        (user_id, kode_tiket, nama_lengkap, event_id, kelas, telp, metode_bayar, total_bayar, status_pembayaran) 
+        VALUES 
+        ('$u_id', '$kode_tiket', '$nama', '$event_id', '$kelas', '$telp', '$metode_bayar', '$total_bayar', '$status_pembayaran')";
+
+    if (mysqli_query($conn, $query_bookings)) {
         mysqli_query($conn, "UPDATE events SET kuota = kuota - 1 WHERE id='$event_id'");
-        echo "<script>alert('Berhasil Booking!'); window.location='tiket_saya.php';</script>";
+        echo "<script>alert('Pembayaran Berhasil! Tiket kamu sudah aktif.'); window.location='tiket_saya.php';</script>";
     } else {
         echo "Error: " . mysqli_error($conn);
     }
+
 } else {
     echo "<script>alert('Maaf, Kuota Habis!'); window.location='daftar_event.php';</script>";
 }
