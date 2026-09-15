@@ -45,7 +45,16 @@ $u_id     = $_SESSION['user_id'];
             if(mysqli_num_rows($q_tiket) > 0) {
                 while($t = mysqli_fetch_assoc($q_tiket)) {
 
-                    // Teks harga & metode bayar
+                    // Badge status pembayaran
+                    if ($t['status_pembayaran'] === 'Lunas') {
+                        $badge_class = 'bg-green-50 text-green-600';
+                        $badge_text  = 'Lunas';
+                    } else {
+                        $badge_class = 'bg-yellow-50 text-yellow-600';
+                        $badge_text  = 'Menunggu Konfirmasi';
+                    }
+
+                    // Teks total bayar
                     if ((int)$t['total_bayar'] > 0) {
                         $bayar_text = 'Rp ' . number_format($t['total_bayar'], 0, ',', '.') . ' · ' . htmlspecialchars($t['metode_bayar']);
                     } else {
@@ -60,8 +69,8 @@ $u_id     = $_SESSION['user_id'];
                         <div class="p-10 flex-1 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start mb-4">
-                                    <span class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                        Confirmed
+                                    <span class="px-4 py-1.5 <?php echo $badge_class; ?> rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                        <?php echo $badge_text; ?>
                                     </span>
                                 </div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1"><?php echo htmlspecialchars($t['kategori']); ?></p>

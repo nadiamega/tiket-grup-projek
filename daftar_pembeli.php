@@ -1,6 +1,6 @@
 <?php
-// include 'koneksi.php';
-session_start();
+include 'koneksi.php';
+// session_start();
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     header("location:login.php");
@@ -142,4 +142,4 @@ $q_pembeli = mysqli_query($conn, "SELECT bookings.*, events.nama_event
         </div>
     </main>
 </body>
-</html>
+</html> 

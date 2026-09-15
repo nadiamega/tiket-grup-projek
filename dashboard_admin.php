@@ -73,6 +73,15 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
                                                                            ORDER BY bookings.id DESC LIMIT 5");
                                         if(mysqli_num_rows($q_pembeli) > 0) {
                                             while($p = mysqli_fetch_assoc($q_pembeli)) {
+
+                                                // Status asli dari status_pembayaran, bukan teks statis
+                                                if ($p['status_pembayaran'] === 'Lunas') {
+                                                    $status_class = 'text-green-600';
+                                                    $status_text  = 'Lunas';
+                                                } else {
+                                                    $status_class = 'text-yellow-500';
+                                                    $status_text  = 'Pending';
+                                                }
                                         ?>
                                             <tr class="group">
                                                 <td class="py-4">
@@ -80,7 +89,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
                                                     <p class="text-[10px] font-bold text-gray-400 uppercase"><?php echo $p['kelas']; ?></p>
                                                 </td>
                                                 <td class="py-4 text-right">
-                                                    <span class="text-[10px] font-black text-gray-300 group-hover:text-black transition uppercase">Berhasil</span>
+                                                    <span class="text-[10px] font-black <?php echo $status_class; ?> uppercase transition"><?php echo $status_text; ?></span>
                                                 </td>
                                             </tr>
                                         <?php 

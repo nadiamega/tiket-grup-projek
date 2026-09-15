@@ -32,6 +32,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <?php echo ($current_page == 'daftar_pembeli.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Daftar Pembeli
             </a>
+            <a href="admin_konfirmasi.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
+                <?php echo ($current_page == 'admin_konfirmasi.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
+                Konfirmasi Pembayaran
+            </a>
             <a href="kelola_user.php" class="flex items-center px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-200 
                 <?php echo ($current_page == 'kelola_user.php') ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 hover:text-black'; ?>">
                 Kelola User

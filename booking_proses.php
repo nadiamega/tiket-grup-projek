@@ -9,7 +9,7 @@ if (!isset($_SESSION['username'])) {
 
 $event_id     = $_POST['event_id'];
 $u_id         = $_SESSION['user_id'];
-$nama         = mysqli_real_escape_string($conn, $_POST['nama']);
+$nama         = mysqli_real_escape_string($conn, $_SESSION['username']); // ambil dari session, bukan form
 $kelas        = mysqli_real_escape_string($conn, $_POST['kelas']);
 $telp         = mysqli_real_escape_string($conn, $_POST['telp']);
 $metode_bayar = mysqli_real_escape_string($conn, $_POST['metode_bayar']);
@@ -42,10 +42,14 @@ if ($d && $d['kuota'] > 0) {
         $total_bayar = (int) preg_replace('/[^0-9]/', '', $harga_raw); // "Rp 5.000" -> 5000
     }
 
-    // --- SIMULASI PROSES PEMBAYARAN ---
-    // Nanti kalau mau pakai payment gateway asli (Midtrans/Xendit),
-    // panggil API-nya di sini sebelum status diubah jadi "Lunas".
-    $status_pembayaran = "Lunas";
+    // --- LOGIKA STATUS PEMBAYARAN ---
+    // Kalau gratis: langsung Lunas & kuota langsung dikurangi (tidak perlu konfirmasi admin)
+    // Kalau berbayar: status Pending, menunggu admin konfirmasi (kuota dikurangi nanti oleh admin)
+    if ($total_bayar === 0) {
+        $status_pembayaran = "Lunas";
+    } else {
+        $status_pembayaran = "Pending";
+    }
 
     $query_bookings = "INSERT INTO bookings 
         (user_id, kode_tiket, nama_lengkap, event_id, kelas, telp, metode_bayar, total_bayar, status_pembayaran) 
@@ -53,8 +57,13 @@ if ($d && $d['kuota'] > 0) {
         ('$u_id', '$kode_tiket', '$nama', '$event_id', '$kelas', '$telp', '$metode_bayar', '$total_bayar', '$status_pembayaran')";
 
     if (mysqli_query($conn, $query_bookings)) {
-        mysqli_query($conn, "UPDATE events SET kuota = kuota - 1 WHERE id='$event_id'");
-        echo "<script>alert('Pembayaran Berhasil! Tiket kamu sudah aktif.'); window.location='tiket_saya.php';</script>";
+        if ($status_pembayaran === "Lunas") {
+            // Gratis: kuota langsung dikurangi saat ini juga
+            mysqli_query($conn, "UPDATE events SET kuota = kuota - 1 WHERE id='$event_id'");
+            echo "<script>alert('Booking Berhasil! Tiket kamu sudah aktif.'); window.location='tiket_saya.php';</script>";
+        } else {
+            echo "<script>alert('Booking berhasil dikirim! Menunggu konfirmasi admin.'); window.location='tiket_saya.php';</script>";
+        }
     } else {
         echo "Error: " . mysqli_error($conn);
     }
