@@ -72,6 +72,27 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
                 </div>
 
                 <div>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Sponsor <span class="text-gray-300 normal-case tracking-normal">(opsional, boleh pilih lebih dari satu)</span></label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 p-6 bg-gray-50 border border-gray-100 rounded-2xl">
+                        <?php
+                        $sponsorList = mysqli_query($conn, "SELECT id, nama_sponsor FROM sponsors ORDER BY nama_sponsor ASC");
+                        if (mysqli_num_rows($sponsorList) > 0) {
+                            while ($sp = mysqli_fetch_assoc($sponsorList)) {
+                        ?>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="sponsor_id[]" value="<?php echo (int)$sp['id']; ?>" class="w-4 h-4 rounded accent-black">
+                                <span class="text-sm font-bold text-gray-700"><?php echo htmlspecialchars($sp['nama_sponsor']); ?></span>
+                            </label>
+                        <?php
+                            }
+                        } else {
+                            echo '<p class="text-sm text-gray-400 col-span-full">Belum ada data sponsor. Tambahkan dulu lewat menu Kelola Sponsor.</p>';
+                        }
+                        ?>
+                    </div>
+                </div>
+
+                <div>
                     <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Poster Event <span class="text-gray-300">(opsional)</span></label>
                     <input type="file" name="poster" accept="image/*" class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-black file:text-white hover:file:bg-gray-800">
                 </div>

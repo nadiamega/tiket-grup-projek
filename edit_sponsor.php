@@ -1,73 +1,105 @@
 <?php
-include 'koneksi.php';
-// session_start();
+/**
+ * edit_sponsor.php
+ * -------------------------------------------------------
+ * Form edit sponsor. Proses simpan ada di edit_sponsor_proses.php.
+ * -------------------------------------------------------
+ */
+session_start();
+require_once 'koneksi.php';
 
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
-    header("location:login.php");
+if (($_SESSION['role'] ?? '') !== 'admin') {
+    header('Location: login.php');
     exit;
 }
 
-$id = $_GET['id'];
-$query = mysqli_query($conn, "SELECT * FROM sponsors WHERE id = '$id'");
-$s = mysqli_fetch_assoc($query);
-?>
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
+if ($id <= 0) {
+    header('Location: kelola_sponsor.php');
+    exit;
+}
+
+$stmt = $conn->prepare("SELECT id, nama_sponsor, gambar_sponsor FROM sponsors WHERE id = ?");
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$sponsor = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$sponsor) {
+    header('Location: kelola_sponsor.php');
+    exit;
+}
+
+$page_title = 'Edit Sponsor';
+$back_link  = 'kelola_sponsor.php';
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Sponsor - SMART2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-[#f8f9fd] flex min-h-screen">
+<body class="bg-[#f8f9fd] flex">
 
-    <?php include 'sidebar.php'; ?>
+<?php include 'sidebar.php'; ?>
 
-    <main class="flex-1 p-10 overflow-y-auto">
-        <div class="max-w-full">
-            <?php
-            $page_title = "Edit Data Sponsor";
-            include 'header_admin.php';
-            ?>
+<main class="flex-1 p-10">
+    <?php include 'header_admin.php'; ?>
 
-            <form action="edit_sponsor_proses.php" method="POST" class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-6">
-                <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
-                
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Nama Sponsor</label>
-                        <input type="text" name="nama_sponsor" value="<?php echo htmlspecialchars($s['nama_sponsor']); ?>" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Kategori Sponsor</label>
-                        <input type="text" name="kategori" value="<?php echo htmlspecialchars($s['kategori']); ?>" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Nomor Telepon</label>
-                        <input type="text" name="telp" value="<?php echo htmlspecialchars($s['telp']); ?>" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Email</label>
-                        <input type="email" name="email" value="<?php echo htmlspecialchars($s['email']); ?>" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                </div>
-
-                <div class="flex gap-4 pt-4">
-                    <button type="submit" class="flex-1 bg-black text-white py-5 rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-100 uppercase tracking-[0.2em] text-[10px]">
-                        Simpan Perubahan
-                    </button>
-                    <a href="kelola_sponsor.php" class="px-10 flex items-center justify-center bg-gray-100 text-gray-400 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 transition">
-                        Batal
-                    </a>
-                </div>
-            </form>
+    <?php if (isset($_SESSION['pesan_error'])): ?>
+        <div class="mb-6 rounded-2xl bg-red-100 text-red-700 px-5 py-4 font-bold text-sm">
+            <?= htmlspecialchars($_SESSION['pesan_error']) ?>
         </div>
-    </main>
+        <?php unset($_SESSION['pesan_error']); ?>
+    <?php endif; ?>
+
+    <form action="edit_sponsor_proses.php" method="POST" enctype="multipart/form-data"
+          class="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-xl">
+
+        <input type="hidden" name="id" value="<?= (int)$sponsor['id'] ?>">
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Sponsor</label>
+            <input type="text" name="nama_sponsor" required
+                   value="<?= htmlspecialchars($sponsor['nama_sponsor']) ?>"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Logo Saat Ini</label>
+            <div class="w-32 h-32 flex items-center justify-center border border-gray-200 rounded-xl mb-3">
+                <?php
+                $pathGambar = 'assets/sponsors/' . $sponsor['gambar_sponsor'];
+                if ($sponsor['gambar_sponsor'] && file_exists($pathGambar)):
+                ?>
+                    <img src="<?= htmlspecialchars($pathGambar) ?>" class="w-full h-full object-contain">
+                <?php else: ?>
+                    <span class="text-gray-400 text-sm">No Logo</span>
+                <?php endif; ?>
+            </div>
+
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Ganti Gambar (opsional)</label>
+            <input type="file" name="gambar_sponsor" accept=".jpg,.jpeg,.png,.webp"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5">
+            <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengganti gambar.</p>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition">
+                Simpan Perubahan
+            </button>
+            <a href="kelola_sponsor.php"
+               class="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition">
+                Batal
+            </a>
+        </div>
+    </form>
+</main>
+
 </body>
 </html>
+<?php $conn->close(); ?>

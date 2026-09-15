@@ -78,6 +78,18 @@ include 'koneksi.php';
 
                 while ($row = mysqli_fetch_assoc($query)) {
 
+                    // Ambil sponsor (nama + gambar) yang terhubung ke event ini
+                    $eventId = (int) $row['id'];
+                    $sponsorQuery = mysqli_query($conn, "SELECT s.nama_sponsor, s.gambar_sponsor 
+                        FROM event_sponsors es 
+                        JOIN sponsors s ON s.id = es.sponsor_id 
+                        WHERE es.event_id = $eventId 
+                        ORDER BY s.nama_sponsor ASC");
+                    $eventSponsors = [];
+                    while ($sp = mysqli_fetch_assoc($sponsorQuery)) {
+                        $eventSponsors[] = $sp;
+                    }
+
             ?>
 
                     <!-- CARD EVENT -->
@@ -186,19 +198,27 @@ include 'koneksi.php';
                                             Disponsori Oleh
                                         </p>
 
-                                        <p class="text-sm font-bold text-gray-700">
-
-                                            🏷️
-
-                                            <?php
-                                            if (!empty($row['sponsor'])) {
-                                                echo htmlspecialchars($row['sponsor']);
-                                            } else {
-                                                echo 'Tidak ada sponsor';
-                                            }
-                                            ?>
-
-                                        </p>
+                                        <?php if (!empty($eventSponsors)) : ?>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <?php foreach ($eventSponsors as $sp):
+                                                    $sponsorImgPath = 'assets/sponsors/' . $sp['gambar_sponsor'];
+                                                ?>
+                                                    <?php if (!empty($sp['gambar_sponsor']) && file_exists($sponsorImgPath)) : ?>
+                                                        <img src="<?php echo htmlspecialchars($sponsorImgPath); ?>"
+                                                             alt="<?php echo htmlspecialchars($sp['nama_sponsor']); ?>"
+                                                             title="<?php echo htmlspecialchars($sp['nama_sponsor']); ?>"
+                                                             class="w-10 h-10 object-contain bg-white border border-gray-100 rounded-lg p-1">
+                                                    <?php else : ?>
+                                                        <div title="<?php echo htmlspecialchars($sp['nama_sponsor']); ?>"
+                                                             class="w-10 h-10 flex items-center justify-center bg-gray-100 border border-gray-100 rounded-lg text-[8px] font-bold text-gray-400 text-center leading-tight">
+                                                            <?php echo htmlspecialchars($sp['nama_sponsor']); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php else : ?>
+                                            <p class="text-sm font-bold text-gray-700">Tidak ada sponsor</p>
+                                        <?php endif; ?>
 
                                     </div>
 
