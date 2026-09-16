@@ -43,7 +43,7 @@ $extra_button = '<a href="tambah_sponsor.php" class="bg-blue-600 hover:bg-blue-7
     <?php endif; ?>
 
     <?php
-    $sql = "SELECT id, nama_sponsor, gambar_sponsor FROM sponsors ORDER BY nama_sponsor ASC";
+    $sql = "SELECT id, nama_sponsor, gambar_sponsor, email FROM sponsors ORDER BY nama_sponsor ASC";
     $result = $conn->query($sql);
     ?>
 
@@ -67,8 +67,12 @@ $extra_button = '<a href="tambah_sponsor.php" class="bg-blue-600 hover:bg-blue-7
                         <?php endif; ?>
                     </div>
 
-                    <p class="font-bold text-gray-800 text-lg mb-4">
+                    <p class="font-bold text-gray-800 text-lg">
                         <?= htmlspecialchars($row['nama_sponsor']) ?>
+                    </p>
+
+                    <p class="text-xs text-gray-400 mb-4">
+                        <?= !empty($row['email']) ? htmlspecialchars($row['email']) : 'Belum ada email' ?>
                     </p>
 
                     <div class="flex gap-3 mt-auto">

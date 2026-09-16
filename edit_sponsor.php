@@ -20,7 +20,7 @@ if ($id <= 0) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id, nama_sponsor, gambar_sponsor FROM sponsors WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, nama_sponsor, gambar_sponsor, email FROM sponsors WHERE id = ?");
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $sponsor = $stmt->get_result()->fetch_assoc();
@@ -65,6 +65,14 @@ $back_link  = 'kelola_sponsor.php';
             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Sponsor</label>
             <input type="text" name="nama_sponsor" required
                    value="<?= htmlspecialchars($sponsor['nama_sponsor']) ?>"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Email Sponsor <span class="text-gray-400 font-normal">(opsional)</span></label>
+            <input type="email" name="email"
+                   value="<?= htmlspecialchars($sponsor['email'] ?? '') ?>"
+                   placeholder="contoh@email.com"
                    class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 

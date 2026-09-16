@@ -17,12 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $nama_sponsor = trim($_POST['nama_sponsor'] ?? '');
+$email = trim($_POST['email'] ?? '');
 
 if ($id <= 0 || $nama_sponsor === '') {
     $_SESSION['pesan_error'] = 'Data tidak lengkap.';
     header('Location: edit_sponsor.php?id=' . $id);
     exit;
 }
+
+if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['pesan_error'] = 'Format email tidak valid.';
+    header('Location: edit_sponsor.php?id=' . $id);
+    exit;
+}
+
+$emailToSave = $email !== '' ? $email : null;
 
 // Ambil data lama dulu (untuk tau nama file gambar lama)
 $stmt = $conn->prepare("SELECT gambar_sponsor FROM sponsors WHERE id = ?");
@@ -50,8 +59,8 @@ if ($adaGambarBaru) {
     $namaFileFinal = $hasilUpload['filename'];
 }
 
-$stmt = $conn->prepare("UPDATE sponsors SET nama_sponsor = ?, gambar_sponsor = ? WHERE id = ?");
-$stmt->bind_param('ssi', $nama_sponsor, $namaFileFinal, $id);
+$stmt = $conn->prepare("UPDATE sponsors SET nama_sponsor = ?, gambar_sponsor = ?, email = ? WHERE id = ?");
+$stmt->bind_param('sssi', $nama_sponsor, $namaFileFinal, $emailToSave, $id);
 
 if ($stmt->execute()) {
     $stmt->close();

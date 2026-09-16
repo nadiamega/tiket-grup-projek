@@ -19,21 +19,25 @@ $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $nama_sponsor = trim($_POST['nama_sponsor'] ?? '');
+    $email        = trim($_POST['email'] ?? '');
 
     if ($nama_sponsor === '') {
         $error = 'Nama sponsor wajib diisi.';
     } elseif (!isset($_FILES['gambar_sponsor']) || $_FILES['gambar_sponsor']['error'] === UPLOAD_ERR_NO_FILE) {
         $error = 'Logo/gambar sponsor wajib diupload.';
+    } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Format email tidak valid.';
     } else {
         $hasilUpload = upload_gambar_sponsor($_FILES['gambar_sponsor']);
 
         if (!$hasilUpload['success']) {
             $error = $hasilUpload['error'];
         } else {
-            $namaFile = $hasilUpload['filename'];
+            $namaFile   = $hasilUpload['filename'];
+            $emailToSave = $email !== '' ? $email : null;
 
-            $stmt = $conn->prepare("INSERT INTO sponsors (nama_sponsor, gambar_sponsor) VALUES (?, ?)");
-            $stmt->bind_param('ss', $nama_sponsor, $namaFile);
+            $stmt = $conn->prepare("INSERT INTO sponsors (nama_sponsor, gambar_sponsor, email) VALUES (?, ?, ?)");
+            $stmt->bind_param('sss', $nama_sponsor, $namaFile, $emailToSave);
 
             if ($stmt->execute()) {
                 $stmt->close();
@@ -80,6 +84,14 @@ $back_link  = 'kelola_sponsor.php';
             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Sponsor</label>
             <input type="text" name="nama_sponsor" required
                    value="<?= htmlspecialchars($_POST['nama_sponsor'] ?? '') ?>"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Email Sponsor <span class="text-gray-400 font-normal">(opsional)</span></label>
+            <input type="email" name="email"
+                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                   placeholder="contoh@email.com"
                    class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
