@@ -49,6 +49,19 @@ $query = "UPDATE events SET
           WHERE id='$id'";
 
 if (mysqli_query($conn, $query)) {
+
+    // Update relasi sponsor: hapus dulu yang lama, lalu simpan pilihan yang baru dicentang
+    mysqli_query($conn, "DELETE FROM event_sponsors WHERE event_id='$id'");
+
+    if (!empty($_POST['sponsor_id']) && is_array($_POST['sponsor_id'])) {
+        foreach ($_POST['sponsor_id'] as $sponsorId) {
+            $sponsorId = (int) $sponsorId;
+            if ($sponsorId > 0) {
+                mysqli_query($conn, "INSERT INTO event_sponsors (event_id, sponsor_id) VALUES ($id, $sponsorId)");
+            }
+        }
+    }
+
     header("location:kelola_event.php");
 } else {
     echo "Gagal mengupdate data: " . mysqli_error($conn);

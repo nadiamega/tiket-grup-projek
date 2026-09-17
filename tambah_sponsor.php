@@ -1,76 +1,120 @@
 <?php
-include 'koneksi.php';
-// session_start();
+/**
+ * tambah_sponsor.php
+ * -------------------------------------------------------
+ * Form tambah sponsor + proses simpan digabung satu file.
+ * -------------------------------------------------------
+ */
+session_start();
+require_once 'koneksi.php';
+require_once 'sponsor_helper.php';
 
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
-    header("location:login.php");
+if (($_SESSION['role'] ?? '') !== 'admin') {
+    header('Location: login.php');
     exit;
 }
 
-if(isset($_POST['tambah'])) {
-    $nama = mysqli_real_escape_string($conn, $_POST['nama']);
-    $kat  = mysqli_real_escape_string($conn, $_POST['kategori']);
-    $mail = mysqli_real_escape_string($conn, $_POST['email']);
-    $telp = mysqli_real_escape_string($conn, $_POST['telp']);
-    mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, kategori, email, telp) VALUES ('$nama', '$kat', '$mail', '$telp')");
-    header("location:kelola_sponsor.php");
-    exit;
+$error = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $nama_sponsor = trim($_POST['nama_sponsor'] ?? '');
+    $email        = trim($_POST['email'] ?? '');
+
+    if ($nama_sponsor === '') {
+        $error = 'Nama sponsor wajib diisi.';
+    } elseif (!isset($_FILES['gambar_sponsor']) || $_FILES['gambar_sponsor']['error'] === UPLOAD_ERR_NO_FILE) {
+        $error = 'Logo/gambar sponsor wajib diupload.';
+    } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Format email tidak valid.';
+    } else {
+        $hasilUpload = upload_gambar_sponsor($_FILES['gambar_sponsor']);
+
+        if (!$hasilUpload['success']) {
+            $error = $hasilUpload['error'];
+        } else {
+            $namaFile   = $hasilUpload['filename'];
+            $emailToSave = $email !== '' ? $email : null;
+
+            $stmt = $conn->prepare("INSERT INTO sponsors (nama_sponsor, gambar_sponsor, email) VALUES (?, ?, ?)");
+            $stmt->bind_param('sss', $nama_sponsor, $namaFile, $emailToSave);
+
+            if ($stmt->execute()) {
+                $stmt->close();
+                $conn->close();
+                $_SESSION['pesan_sukses'] = 'Sponsor berhasil ditambahkan.';
+                header('Location: kelola_sponsor.php');
+                exit;
+            } else {
+                hapus_file_gambar_sponsor($namaFile);
+                $error = 'Gagal menyimpan data sponsor ke database.';
+            }
+        }
+    }
 }
+
+$page_title = 'Tambah Sponsor';
+$back_link  = 'kelola_sponsor.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Sponsor - SMART2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-[#f8f9fd] flex min-h-screen">
+<body class="bg-[#f8f9fd] flex">
 
-    <?php include 'sidebar.php'; ?>
+<?php include 'sidebar.php'; ?>
 
-    <main class="flex-1 p-10 overflow-y-auto">
-        <div class="max-w-full">
-            <?php
-            $page_title  = "Tambah Sponsor Baru";
-            include 'header_admin.php';
-            ?>
+<main class="flex-1 p-10">
+    <?php include 'header_admin.php'; ?>
 
-            <form action="tambah_sponsor.php" method="POST" class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-6">
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Nama Perusahaan/Sponsor</label>
-                        <input type="text" name="nama" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Kategori Sponsor</label>
-                        <input type="text" name="kategori" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">No. Telepon</label>
-                        <input type="text" name="telp" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Email Sponsor</label>
-                        <input type="email" name="email" required class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold text-gray-900">
-                    </div>
-                </div>
-
-                <div class="flex gap-4 pt-4">
-                    <button type="submit" name="tambah" class="flex-1 bg-black text-white py-5 rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-100 uppercase tracking-[0.2em] text-[10px]">
-                        Simpan Sponsor
-                    </button>
-                    <a href="kelola_sponsor.php" class="px-10 flex items-center justify-center bg-gray-100 text-gray-400 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 transition">
-                        Batal
-                    </a>
-                </div>
-            </form>
+    <?php if ($error): ?>
+        <div class="mb-6 rounded-2xl bg-red-100 text-red-700 px-5 py-4 font-bold text-sm">
+            <?= htmlspecialchars($error) ?>
         </div>
-    </main>
+    <?php endif; ?>
+
+    <form action="tambah_sponsor.php" method="POST" enctype="multipart/form-data"
+          class="bg-white rounded-2xl shadow-sm p-6 space-y-5 max-w-xl">
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Sponsor</label>
+            <input type="text" name="nama_sponsor" required
+                   value="<?= htmlspecialchars($_POST['nama_sponsor'] ?? '') ?>"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Email Sponsor <span class="text-gray-400 font-normal">(opsional)</span></label>
+            <input type="email" name="email"
+                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                   placeholder="contoh@email.com"
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Logo / Gambar Sponsor</label>
+            <input type="file" name="gambar_sponsor" accept=".jpg,.jpeg,.png,.webp" required
+                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5">
+            <p class="text-xs text-gray-400 mt-1">Format: JPG, JPEG, PNG, WEBP. Maks 2MB.</p>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition">
+                Simpan
+            </button>
+            <a href="kelola_sponsor.php"
+               class="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition">
+                Batal
+            </a>
+        </div>
+    </form>
+</main>
+
 </body>
 </html>
+<?php if (isset($conn) && $conn->ping()) { $conn->close(); } ?>

@@ -15,6 +15,13 @@ $data = mysqli_fetch_assoc($query);
 if (mysqli_num_rows($query) < 1) {
     die("Data tidak ditemukan...");
 }
+
+// Ambil sponsor yang sudah terhubung ke event ini
+$selectedSponsors = [];
+$q_sel = mysqli_query($conn, "SELECT sponsor_id FROM event_sponsors WHERE event_id='$id'");
+while ($s = mysqli_fetch_assoc($q_sel)) {
+    $selectedSponsors[] = (int)$s['sponsor_id'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -77,6 +84,28 @@ if (mysqli_num_rows($query) < 1) {
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Deskripsi Event</label>
                     <textarea name="deskripsi" rows="4" class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black font-bold"><?php echo htmlspecialchars($data['deskripsi']); ?></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Sponsor <span class="text-gray-300 normal-case tracking-normal">(opsional, boleh pilih lebih dari satu)</span></label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 p-6 bg-gray-50 border border-gray-100 rounded-2xl">
+                        <?php
+                        $sponsorList = mysqli_query($conn, "SELECT id, nama_sponsor FROM sponsors ORDER BY nama_sponsor ASC");
+                        if (mysqli_num_rows($sponsorList) > 0) {
+                            while ($sp = mysqli_fetch_assoc($sponsorList)) {
+                                $isChecked = in_array((int)$sp['id'], $selectedSponsors, true) ? 'checked' : '';
+                        ?>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="sponsor_id[]" value="<?php echo (int)$sp['id']; ?>" <?php echo $isChecked; ?> class="w-4 h-4 rounded accent-black">
+                                <span class="text-sm font-bold text-gray-700"><?php echo htmlspecialchars($sp['nama_sponsor']); ?></span>
+                            </label>
+                        <?php
+                            }
+                        } else {
+                            echo '<p class="text-sm text-gray-400 col-span-full">Belum ada data sponsor. Tambahkan dulu lewat menu Kelola Sponsor.</p>';
+                        }
+                        ?>
+                    </div>
                 </div>
 
                 <div>

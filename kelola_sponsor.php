@@ -1,110 +1,100 @@
 <?php
-include 'koneksi.php';
-// session_start();
+/**
+ * kelola_sponsor.php
+ * -------------------------------------------------------
+ * Halaman ADMIN untuk kelola sponsor.
+ * Struktur mengikuti pola asli project: file ini sendiri yang
+ * membuka <html>/<head>/Tailwind + <body class="flex">, lalu
+ * include sidebar.php dan header_admin.php di dalamnya.
+ * -------------------------------------------------------
+ */
+session_start();
+require_once 'koneksi.php';
 
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
-    header("location:login.php");
+// Hanya admin yang boleh akses
+if (($_SESSION['role'] ?? '') !== 'admin') {
+    header('Location: login.php');
     exit;
 }
 
-$per_page = 7;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $per_page;
-
-$total_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM sponsors");
-$total_row = mysqli_fetch_assoc($total_result);
-$total_data = $total_row['total'];
-$total_pages = ceil($total_data / $per_page);
-
-$q = mysqli_query($conn, "SELECT * FROM sponsors ORDER BY id ASC LIMIT $per_page OFFSET $offset");
+$page_title   = 'Kelola Sponsor';
+$extra_button = '<a href="tambah_sponsor.php" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-lg transition">+ Tambah Sponsor</a>';
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <title>Kelola Sponsor - SMART2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-[#f8f9fd] flex min-h-screen">
+<body class="bg-[#f8f9fd] flex">
 
-    <?php include 'sidebar.php'; ?>
+<?php include 'sidebar.php'; ?>
 
-    <main class="flex-1 p-10 overflow-y-auto">
-        <?php
-        $page_title   = "Kelola Sponsor";
-        $extra_button = '<a href="tambah_sponsor.php" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition shadow-lg shadow-gray-100">+ Tambah Sponsor</a>';
-        include 'header_admin.php';
-        ?>
+<main class="flex-1 p-10">
+    <?php include 'header_admin.php'; ?>
 
-        <div class="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm">
-            <table class="w-full table-fixed text-left">
-                <thead class="bg-gray-50 text-[10px] uppercase font-black text-gray-400 tracking-[0.2em]">
-                    <tr>
-                        <th class="p-8 w-[22%]">Nama Sponsor</th>
-                        <th class="p-8 w-[22%]">Kategori</th>
-                        <th class="p-8 w-[22%]">No. Telepon</th>
-                        <th class="p-8 w-[22%]">Email</th>
-                        <th class="p-8 w-[12%]">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="font-bold text-sm text-gray-700">
-                    <?php
-                    if(mysqli_num_rows($q) > 0) {
-                        while($s = mysqli_fetch_assoc($q)) { ?>
-                            <tr class="border-t border-gray-50 hover:bg-gray-50/50 transition">
-                                <td class="p-8 text-gray-900 font-black truncate"><?php echo htmlspecialchars($s['nama_sponsor']); ?></td>
-                                <td class="p-8">
-                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-lg">
-                                        <?php echo htmlspecialchars($s['kategori']); ?>
-                                    </span>
-                                </td>
-                                <td class="p-8 font-bold text-gray-600"><?php echo htmlspecialchars($s['telp']); ?></td>
-                                <td class="p-8 font-bold text-blue-600 underline decoration-2 underline-offset-4 decoration-blue-100 truncate"><?php echo htmlspecialchars($s['email']); ?></td>
-                                <td class="p-8">
-                                    <div class="flex gap-6">
-                                        <a href="edit_sponsor.php?id=<?php echo $s['id']; ?>" class="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Edit</a>
-                                        <a href="hapus_sponsor.php?id=<?php echo $s['id']; ?>" onclick="return confirm('Hapus sponsor ini?')" class="text-[10px] font-black text-red-600 uppercase tracking-widest hover:underline">Hapus</a>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php }
-                    } else { ?>
-                        <tr>
-                            <td colspan="5" class="p-20 text-center">
-                                <p class="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Belum ada data sponsor</p>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+    <?php if (isset($_SESSION['pesan_sukses'])): ?>
+        <div class="mb-6 rounded-2xl bg-green-100 text-green-700 px-5 py-4 font-bold text-sm">
+            <?= htmlspecialchars($_SESSION['pesan_sukses']) ?>
         </div>
+        <?php unset($_SESSION['pesan_sukses']); ?>
+    <?php endif; ?>
 
-        <?php if ($total_pages > 1) : ?>
-        <div class="mt-6 flex items-center justify-between">
-            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Halaman <?php echo $page; ?> dari <?php echo $total_pages; ?> &mdash; Total <?php echo $total_data; ?> sponsor
-            </p>
-            <div class="flex items-center gap-2">
-                <?php if ($page > 1) : ?>
-                    <a href="kelola_sponsor.php?page=<?php echo $page - 1; ?>" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition shadow-sm">← Sebelumnya</a>
-                <?php endif; ?>
+    <?php
+    $sql = "SELECT id, nama_sponsor, gambar_sponsor, email FROM sponsors ORDER BY nama_sponsor ASC";
+    $result = $conn->query($sql);
+    ?>
 
-                <?php for ($i = 1; $i <= $total_pages; $i++) : ?>
-                    <a href="kelola_sponsor.php?page=<?php echo $i; ?>" class="w-10 h-10 flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest transition
-                        <?php echo ($i == $page) ? 'bg-black text-white shadow-lg' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'; ?>">
-                        <?php echo $i; ?>
-                    </a>
-                <?php endfor; ?>
+    <?php if ($result && $result->num_rows > 0): ?>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
 
-                <?php if ($page < $total_pages) : ?>
-                    <a href="kelola_sponsor.php?page=<?php echo $page + 1; ?>" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-black text-white hover:bg-gray-800 transition shadow-lg shadow-gray-100">Selanjutnya →</a>
-                <?php endif; ?>
-            </div>
+                    <div class="w-32 h-32 mx-auto flex items-center justify-center mb-4">
+                        <?php
+                        $pathGambar = 'assets/sponsors/' . $row['gambar_sponsor'];
+                        if ($row['gambar_sponsor'] && file_exists($pathGambar)):
+                        ?>
+                            <img src="<?= htmlspecialchars($pathGambar) ?>"
+                                 alt="<?= htmlspecialchars($row['nama_sponsor']) ?>"
+                                 class="w-full h-full object-contain">
+                        <?php else: ?>
+                            <div class="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+                                No Logo
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <p class="font-bold text-gray-800 text-lg">
+                        <?= htmlspecialchars($row['nama_sponsor']) ?>
+                    </p>
+
+                    <p class="text-xs text-gray-400 mb-4">
+                        <?= !empty($row['email']) ? htmlspecialchars($row['email']) : 'Belum ada email' ?>
+                    </p>
+
+                    <div class="flex gap-3 mt-auto">
+                        <a href="edit_sponsor.php?id=<?= (int)$row['id'] ?>"
+                           class="text-sm font-semibold text-blue-600 hover:underline">
+                            Edit
+                        </a>
+                        <a href="hapus_sponsor.php?id=<?= (int)$row['id'] ?>"
+                           onclick="return confirm('Yakin ingin menghapus sponsor \'<?= htmlspecialchars($row['nama_sponsor'], ENT_QUOTES) ?>\'? Gambar juga akan dihapus.');"
+                           class="text-sm font-semibold text-red-600 hover:underline">
+                            Hapus
+                        </a>
+                    </div>
+                </div>
+            <?php endwhile; ?>
         </div>
-        <?php endif; ?>
+    <?php else: ?>
+        <p class="text-gray-500">Belum ada sponsor yang ditambahkan.</p>
+    <?php endif; ?>
 
-    </main>
+</main>
+
 </body>
 </html>
+<?php $conn->close(); ?>
